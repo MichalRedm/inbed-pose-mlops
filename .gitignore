@@ -1,0 +1,65 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Environments & Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Unit test / coverage reports
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Linters & Type Checkers
+.ruff_cache/
+.mypy_cache/
+
+# PyTorch Lightning & Deep Learning Checkpoints
+checkpoints/
+*.ckpt
+*.pt
+*.pth
+
+# MLflow & Optuna databases & logs
+mlruns/
+mlflow.db
+mlflow.db-journal
+*.sqlite3
+optuna.db
+lightning_logs/
+
+# Data directories (keep directory structure via .gitkeep)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# Outputs & Artifacts
+artifacts/
+outputs/
+results/
+scratch/
+
+# Credentials & environment variables
+.env
+.env.local
+*.pem
+*.key
+gpu_connection.json
+
+# IDE / OS metadata
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+.tmp_*
