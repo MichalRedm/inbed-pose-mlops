@@ -157,6 +157,7 @@ def run_training(
     trainer = pl.Trainer(
         accelerator=train_cfg.get("accelerator", "auto"),
         devices=train_cfg.get("devices", 1),
+        strategy=train_cfg.get("strategy", "auto"),
         precision=train_cfg.get("precision", "16-mixed"),
         max_epochs=train_cfg.get("max_epochs", 25),
         callbacks=callbacks if not fast_dev_run else [],
@@ -255,6 +256,12 @@ def parse_args() -> argparse.Namespace:
         help="Number of devices / GPUs.",
     )
     parser.add_argument(
+        "--strategy",
+        type=str,
+        default=None,
+        help="Distributed execution strategy ('auto', 'ddp', etc.).",
+    )
+    parser.add_argument(
         "--precision",
         type=str,
         default=None,
@@ -283,6 +290,8 @@ def main() -> None:
         config.setdefault("training", {})["accelerator"] = args.accelerator
     if args.devices:
         config.setdefault("training", {})["devices"] = args.devices
+    if args.strategy:
+        config.setdefault("training", {})["strategy"] = args.strategy
     if args.precision:
         config.setdefault("training", {})["precision"] = args.precision
     if args.experiment_name:

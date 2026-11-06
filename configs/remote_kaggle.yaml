@@ -1,0 +1,40 @@
+# configs/remote_kaggle.yaml - Remote Dual-GPU (Kaggle 2x Tesla T4) Configuration
+
+data:
+  data_dir: "/kaggle/input/slp-dataset/danaLab"
+  modalities:
+    - "IR"
+  covers:
+    - "uncover"
+  image_size: [256, 256]
+  heatmap_size: [64, 64]
+  sigma: 2.0
+  batch_size: 32
+  num_workers: 2
+
+model:
+  backbone: "resnet18"
+  in_channels: 1
+  num_joints: 14
+  pretrained: false
+
+training:
+  mode: "supervised"
+  loss_type: "mse"
+  lr: 0.001
+  weight_decay: 0.0001
+  optimizer: "adamw"
+  lr_scheduler: "cosine"
+  max_epochs: 30
+  precision: "16-mixed"
+  accelerator: "gpu"
+  devices: 2
+  strategy: "ddp"
+  monitor: "val_pck"
+  patience: 12
+  log_predictions_every_n_epochs: 1
+
+mlflow:
+  tracking_uri: "sqlite:///kaggle_mlflow.db"
+  experiment_name: "inbed-pose-kaggle-dual-gpu"
+  run_name: "resnet18-dual-t4-ddp"
