@@ -22,7 +22,7 @@
 ## Phased Pull Request Roadmap
 - [x] **PR 1**: `chore/repo-scaffolding-and-ci` (Repository layout, agent governance, developer tooling, GitHub Actions CI)
 - [x] **PR 2**: `feat/slp-data-pipeline` (Dataset, augmentations, `SLPDataModule`, unit tests)
-- [ ] **PR 3**: `feat/pose-models-and-lightning-module` (`ResNetPose`, `InBedPoseLightningModule`, PCK/MPJPE metrics, unit tests)
+- [x] **PR 3**: `feat/pose-models-and-lightning-module` (`ResNetPose`, `InBedPoseLightningModule`, PCK/MPJPE metrics, unit tests)
 - [ ] **PR 4**: `feat/mlflow-logging-and-training-pipeline` (CLI training, MLflow visual callbacks, checkpoints, smoke test)
 - [ ] **PR 5**: `feat/optuna-hpo-pipeline` (Optuna runner, pruning callback, $\ge 3\%$ gain verification, parameter importance plots)
 - [ ] **PR 6**: `feat/remote-gpu-support` (Streamlined Kaggle notebook, remote runner, multi-GPU DDP config)
