@@ -1,0 +1,16 @@
+version: "2.0"
+metadata:
+  project_name: "inbed-pose-mlops"
+  framework: "pytorch-lightning"
+  experiment_tracking: "mlflow"
+  hpo: "optuna"
+rules:
+  - ".agents/rules/git_and_pr_standards.md"
+  - ".agents/rules/code_quality_and_ci_standards.md"
+  - ".agents/rules/ml_training_standards.md"
+skills:
+  - ".agents/skills/git-pr-workflow"
+  - ".agents/skills/agent-maintenance"
+context:
+  - ".agents/context/project_context.md"
+  - ".agents/context/architecture_overview.md"
