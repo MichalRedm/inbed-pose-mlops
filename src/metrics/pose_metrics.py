@@ -20,6 +20,24 @@ LSP_JOINT_NAMES: list[str] = [
     "Head",
 ]
 
+LSP_SKELETON_PAIRS: list[tuple[int, int]] = [
+    (0, 1),
+    (1, 2),
+    (2, 3),
+    (3, 4),
+    (4, 5),
+    (6, 7),
+    (7, 8),
+    (8, 9),
+    (9, 10),
+    (10, 11),
+    (2, 8),
+    (3, 9),
+    (8, 12),
+    (9, 12),
+    (12, 13),
+]
+
 
 def compute_mpjpe(
     preds: torch.Tensor,
