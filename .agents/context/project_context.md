@@ -26,4 +26,4 @@
 - [x] **PR 4**: `feat/mlflow-logging-and-training-pipeline` (CLI training, MLflow visual callbacks, checkpoints, smoke test)
 - [x] **PR 5**: `feat/optuna-hpo-pipeline` (Optuna runner, pruning callback, $\ge 3\%$ gain verification, parameter importance plots)
 - [x] **PR 6**: `feat/remote-gpu-support` (Streamlined Kaggle notebook, remote runner, multi-GPU DDP config)
-- [ ] **PR 7**: `docs/documentation-and-presentation-guide` (`README.md`, 5-minute presentation notes & Tryhard materials)
+- [x] **PR 7**: `docs/documentation-and-presentation-guide` (`README.md`, 5-minute presentation notes & Tryhard materials)
