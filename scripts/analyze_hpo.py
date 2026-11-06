@@ -128,8 +128,8 @@ def analyze_study(
 
     # 1. Plot Optimization History
     fig, ax = plt.subplots(figsize=(8, 5))
-    trial_indices = [t.number for t in completed_trials]
-    trial_values = [t.value for t in completed_trials]
+    trial_indices = [t.number for t in completed_trials if t.value is not None]
+    trial_values = [t.value for t in completed_trials if t.value is not None]
     ax.scatter(
         trial_indices, trial_values, color="dodgerblue", s=50, label="Completed Trial"
     )
