@@ -47,9 +47,31 @@ class SLPDataModule(pl.LightningDataModule):
         self.val_covers = val_covers or ["uncover", "cover1", "cover2"]
         self.test_covers = test_covers or ["cover1", "cover2"]
 
-        self.train_subjects = list(train_subjects or range(1, 31))
-        self.val_subjects = list(val_subjects or range(31, 41))
-        self.test_subjects = list(test_subjects or range(41, 46))
+        existing_train = [
+            s for s in range(1, 25) if (self.data_root / f"{s:05d}").exists()
+        ]
+        existing_val = [
+            s for s in range(25, 31) if (self.data_root / f"{s:05d}").exists()
+        ]
+        existing_test = [
+            s for s in range(31, 81) if (self.data_root / f"{s:05d}").exists()
+        ]
+
+        self.train_subjects = list(
+            train_subjects
+            if train_subjects is not None
+            else (existing_train or range(1, 31))
+        )
+        self.val_subjects = list(
+            val_subjects
+            if val_subjects is not None
+            else (existing_val or range(31, 41))
+        )
+        self.test_subjects = list(
+            test_subjects
+            if test_subjects is not None
+            else (existing_test or range(41, 46))
+        )
 
         self.image_size = image_size
         self.heatmap_size = heatmap_size

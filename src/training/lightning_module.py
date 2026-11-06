@@ -154,9 +154,12 @@ class InBedPoseLightningModule(pl.LightningModule):
         return cast(torch.Tensor, total_loss)
 
     def validation_step(
-        self, batch: dict[str, Any], batch_idx: int
-    ) -> dict[str, torch.Tensor]:
+        self, batch: dict[str, Any] | None, batch_idx: int
+    ) -> dict[str, torch.Tensor] | None:
         """Validation evaluation step."""
+        if batch is None:
+            return None
+
         images = batch["image"]
         targets = batch["target"]
         joints = batch["joints"]
@@ -178,9 +181,12 @@ class InBedPoseLightningModule(pl.LightningModule):
         return {"val_loss": val_loss, "val_pck": val_pck, "val_mpjpe": val_mpjpe}
 
     def test_step(
-        self, batch: dict[str, Any], batch_idx: int
-    ) -> dict[str, torch.Tensor]:
+        self, batch: dict[str, Any] | None, batch_idx: int
+    ) -> dict[str, torch.Tensor] | None:
         """Test evaluation step."""
+        if batch is None:
+            return None
+
         images = batch["image"]
         targets = batch["target"]
         joints = batch["joints"]
