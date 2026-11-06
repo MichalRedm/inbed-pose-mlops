@@ -35,6 +35,8 @@ mlflow.db
 mlflow.db-journal
 *.sqlite3
 optuna.db
+*.db
+*.db-journal
 lightning_logs/
 
 # Data directories (keep directory structure via .gitkeep)
@@ -42,6 +44,7 @@ data/raw/*
 !data/raw/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
+data/SLP/
 
 # Outputs & Artifacts
 artifacts/
@@ -63,3 +66,4 @@ gpu_connection.json
 .DS_Store
 Thumbs.db
 .tmp_*
+.github/context-mode/
