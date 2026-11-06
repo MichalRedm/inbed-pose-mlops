@@ -1,0 +1,39 @@
+# configs/baseline.yaml - Baseline Supervised Training Configuration
+
+data:
+  data_dir: "data/SLP/danaLab"
+  modalities:
+    - "IR"
+  covers:
+    - "uncover"
+  image_size: [256, 256]
+  heatmap_size: [64, 64]
+  sigma: 2.0
+  batch_size: 16
+  num_workers: 0
+
+model:
+  backbone: "resnet18"
+  in_channels: 1
+  num_joints: 14
+  pretrained: false
+
+training:
+  mode: "supervised"
+  loss_type: "mse"
+  lr: 0.001
+  weight_decay: 0.0001
+  optimizer: "adamw"
+  lr_scheduler: "cosine"
+  max_epochs: 25
+  precision: "16-mixed"
+  accelerator: "auto"
+  devices: 1
+  monitor: "val_pck"
+  patience: 10
+  log_predictions_every_n_epochs: 1
+
+mlflow:
+  tracking_uri: "sqlite:///mlflow.db"
+  experiment_name: "inbed-pose-baseline"
+  run_name: "resnet18-ir-baseline"

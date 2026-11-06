@@ -1,0 +1,47 @@
+# configs/semi_supervised.yaml - Semi-Supervised Teacher-Student Self-Training Configuration
+
+data:
+  data_dir: "data/SLP/danaLab"
+  modalities:
+    - "IR"
+  covers:
+    - "uncover"
+  covers_unlabeled:
+    - "cover1"
+    - "cover2"
+  image_size: [256, 256]
+  heatmap_size: [64, 64]
+  sigma: 2.0
+  batch_size: 16
+  num_workers: 0
+
+model:
+  backbone: "resnet18"
+  in_channels: 1
+  num_joints: 14
+  pretrained: false
+
+training:
+  mode: "semi_supervised"
+  loss_type: "mse"
+  lr: 0.0005
+  weight_decay: 0.0001
+  optimizer: "adamw"
+  lr_scheduler: "cosine"
+  max_epochs: 30
+  precision: "16-mixed"
+  accelerator: "auto"
+  devices: 1
+  monitor: "val_pck"
+  patience: 12
+  log_predictions_every_n_epochs: 1
+
+  # Semi-supervised Teacher-Student hyperparameters
+  ema_alpha: 0.999
+  conf_threshold: 0.4
+  lambda_unlabeled: 1.0
+
+mlflow:
+  tracking_uri: "sqlite:///mlflow.db"
+  experiment_name: "inbed-pose-semi-supervised"
+  run_name: "resnet18-ir-teacher-student"
