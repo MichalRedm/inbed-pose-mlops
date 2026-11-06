@@ -76,3 +76,21 @@ def test_train_cli_smoke(mock_slp_root: Path) -> None:
     res = subprocess.run(cmd, capture_output=True, text=True, check=False, env=env)
     assert res.returncode == 0, f"CLI train failed:\n{res.stderr}\n{res.stdout}"
     assert "In-Bed Pose Estimation MLOps Training Pipeline" in res.stdout
+
+
+def test_populate_mlflow_smoke(tmp_path: Path) -> None:
+    """Smoke tests populate_dashboard script with temporary SQLite backend."""
+    from scripts.populate_mlflow import populate_dashboard
+
+    temp_db = tmp_path / "test_mlflow.db"
+    tracking_uri = f"sqlite:///{temp_db}"
+
+    populate_dashboard(tracking_uri=tracking_uri)
+
+    import mlflow
+
+    client = mlflow.tracking.MlflowClient(tracking_uri=tracking_uri)
+    exps = [e.name for e in client.search_experiments()]
+    assert "inbed-pose-baseline" in exps
+    assert "inbed-pose-semi-supervised" in exps
+    assert "inbed-pose-hpo" in exps
