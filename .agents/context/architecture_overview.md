@@ -19,6 +19,10 @@ inbed-pose-mlops/
 │   │   └── callbacks.py        # MLflow visual prediction callback & checkpointing
 │   ├── metrics/
 │   │   └── pose_metrics.py     # PCK@0.2, MPJPE, heatmap peak decoders
+│   ├── serving/
+│   │   ├── predictor.py        # PoseInferenceEngine (BentoML/ckpt loading & batched inference)
+│   │   ├── schemas.py          # Pydantic v2 API request/response schemas
+│   │   └── service.py          # BentoML InBedPoseService with adaptive dynamic batching
 │   └── utils/
 │       ├── config.py           # YAML loader
 │       └── visualization.py    # Matplotlib skeletal overlay rendering
@@ -26,7 +30,10 @@ inbed-pose-mlops/
     ├── train.py                # Standalone training script with MLflow logging
     ├── tune.py                 # Standalone Optuna HPO runner with pruning
     ├── analyze_hpo.py          # Parameter importance and >=3% delta verification
-    └── evaluate.py             # Model checkpoint evaluation
+    ├── evaluate.py             # Model checkpoint evaluation
+    ├── export_model.py         # Package HW1 checkpoint into BentoML Model Store
+    ├── client_example.py       # Example HTTP client for BentoML Pose API
+    └── benchmark_serving.py    # Asyncio+httpx dynamic batching load benchmark
 ```
 
 ### Key Interfaces & Contracts

@@ -1,0 +1,27 @@
+# configs/serving.yaml - BentoML Model Serving & Dynamic Batching Benchmark Config
+
+model:
+  bento_model_tag: "inbed_pose_resnet18:latest"
+  checkpoint_path: "1/1e23af83c5374814872c3367d6d3a462/checkpoints/best-checkpoint-val_pck=0.0397.ckpt"
+  backbone: "resnet18"
+  in_channels: 1
+  num_joints: 14
+  image_size: [256, 256]
+  heatmap_size: [64, 64]
+  device: "auto"
+
+serving:
+  host: "127.0.0.1"
+  port: 3000
+  batching:
+    enabled: true
+    max_batch_size: 32
+    max_latency_ms: 50
+
+benchmark:
+  concurrency_levels: [1, 8, 32]
+  duration_seconds: 60
+  warmup_seconds: 15
+  repeats: 3
+  sample_image_path: "data/SLP/danaLab/00001/IR/uncover/image_000001.png"
+  output_json: "docs/hw2_benchmark_results.json"

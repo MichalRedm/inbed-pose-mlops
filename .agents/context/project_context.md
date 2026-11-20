@@ -27,3 +27,4 @@
 - [x] **PR 5**: `feat/optuna-hpo-pipeline` (Optuna runner, pruning callback, $\ge 3\%$ gain verification, parameter importance plots)
 - [x] **PR 6**: `feat/remote-gpu-support` (Streamlined Kaggle notebook, remote runner, multi-GPU DDP config)
 - [x] **PR 7**: `docs/documentation-and-presentation-guide` (`README.md`, 5-minute presentation notes & Tryhard materials)
+- [x] **PR 8**: `feat/model-serving-and-batching-benchmark` (BentoML REST API, adaptive dynamic batching, 60s concurrency sweep benchmark)

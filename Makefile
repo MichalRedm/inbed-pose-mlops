@@ -1,4 +1,4 @@
-.PHONY: help install install-dev lint format typecheck test fast-dev train tune mlflow-ui clean
+.PHONY: help install install-dev lint format typecheck test fast-dev train tune mlflow-ui export-model serve serve-no-batch client-example benchmark-serving clean
 
 PYTHON ?= python
 
@@ -47,6 +47,21 @@ tune:
 
 mlflow-ui:
 	mlflow ui --backend-store-uri sqlite:///mlflow.db
+
+export-model:
+	$(PYTHON) scripts/export_model.py --config configs/serving.yaml
+
+serve:
+	$(PYTHON) -m bentoml serve src.serving.service:InBedPoseService --host 127.0.0.1 --port 3000
+
+serve-no-batch:
+	POSE_ENABLE_BATCHING=0 $(PYTHON) -m bentoml serve src.serving.service:InBedPoseService --host 127.0.0.1 --port 3000
+
+client-example:
+	$(PYTHON) scripts/client_example.py --config configs/serving.yaml
+
+benchmark-serving:
+	$(PYTHON) scripts/benchmark_serving.py --config configs/serving.yaml --auto-spawn
 
 clean:
 	rm -rf .pytest_cache .ruff_cache .mypy_cache build dist *.egg-info

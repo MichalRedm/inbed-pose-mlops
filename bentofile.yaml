@@ -1,0 +1,17 @@
+service: "src.serving.service:InBedPoseService"
+labels:
+  owner: inbed-pose-mlops
+  project: slp-pose-estimation
+include:
+  - "src/**/*.py"
+  - "configs/serving.yaml"
+python:
+  packages:
+    - "torch>=2.0.0"
+    - "torchvision>=0.15.0"
+    - "pytorch-lightning>=2.1.0"
+    - "bentoml>=1.4.0"
+    - "pydantic>=2.0.0"
+    - "Pillow>=9.5.0"
+    - "numpy>=1.24.0"
+    - "pyyaml>=6.0"
