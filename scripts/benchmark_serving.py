@@ -222,8 +222,16 @@ def _spawn_bentoml_server(
 
 
 def _stop_server(proc: subprocess.Popen[str]) -> None:
-    """Gracefully terminates a spawned BentoML server subprocess."""
-    proc.terminate()
+    """Gracefully terminates a spawned BentoML server process tree."""
+    if sys.platform == "win32":
+        subprocess.run(
+            ["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+    else:
+        proc.terminate()
     try:
         proc.wait(timeout=10)
     except subprocess.TimeoutExpired:
@@ -360,16 +368,17 @@ def main() -> None:
     summary: dict[str, dict[int, dict[str, float]]] = {}
     server_metadata: dict[str, Any] = {}
 
-    for mode_name, enable_batching in modes_to_run:
+    for mode_idx, (mode_name, enable_batching) in enumerate(modes_to_run):
         print(f"\n=== Benchmarking mode: {mode_name} ===")
         proc: subprocess.Popen[str] | None = None
-        base_url = args.server_url or f"http://{host}:{port}"
+        mode_port = port + mode_idx
+        base_url = args.server_url or f"http://{host}:{mode_port}"
 
         try:
             if args.auto_spawn:
                 proc = _spawn_bentoml_server(
                     host=host,
-                    port=port,
+                    port=mode_port,
                     enable_batching=enable_batching,
                     max_batch_size=max_batch_size,
                     max_latency_ms=max_latency_ms,

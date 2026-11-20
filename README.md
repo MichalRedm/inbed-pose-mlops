@@ -164,6 +164,70 @@ Outputs:
 
 ---
 
+## 🚀 Homework 2: Model Serving & Dynamic Batching Benchmark (BentoML)
+
+The trained Homework 1 `ResNetPose` (`resnet18`, 1-channel IR) model is served as a REST API using **BentoML** (`src/serving/service.py`) with configurable **adaptive dynamic batching** (`batchable=True`, `max_batch_size=32`, `max_latency_ms=50`).
+
+### 1. Package the Trained HW1 Model
+Export the trained PyTorch Lightning checkpoint into the local BentoML Model Store:
+```bash
+python scripts/export_model.py --config configs/serving.yaml
+```
+
+### 2. Launch the BentoML REST API Service
+Start the service with **adaptive dynamic batching** enabled (default):
+```bash
+python -m bentoml serve src.serving.service:InBedPoseService --host 127.0.0.1 --port 3000
+```
+Start the service **without dynamic batching** (`batchable=False`):
+```bash
+POSE_ENABLE_BATCHING=0 python -m bentoml serve src.serving.service:InBedPoseService --host 127.0.0.1 --port 3000
+```
+
+### 3. Client Request Example & Working Output
+Query the running service using the Python client:
+```bash
+python scripts/client_example.py --config configs/serving.yaml
+```
+Or via `curl` (sending a base64-encoded 256×256 IR image):
+```bash
+curl -X POST "http://127.0.0.1:3000/predict" \
+  -H "Content-Type: application/json" \
+  -d '{"images_b64": ["<BASE64_ENCODED_IMAGE>"]}'
+```
+Example output returned by `scripts/client_example.py`:
+```text
+Service URL          : http://127.0.0.1:3000
+Model / Backbone     : inbed_pose_resnet18:latest (resnet18)
+Device               : cpu
+Batching Enabled     : True
+Batch Size Processed : 1
+Inference Time       : 125.64 ms
+Joint          |   X (px) |   Y (px) | Confidence
+R_Ankle        |   156.00 |    52.00 |     7.2999
+...
+Head           |   156.00 |    52.00 |     6.5228
+```
+
+### 4. Dynamic Batching Benchmark Results
+Run the full asynchronous load test (`15s` warm-up, `60s` measurement window, `3` repeats per concurrency level):
+```bash
+python scripts/benchmark_serving.py --config configs/serving.yaml --auto-spawn
+```
+
+- **Hardware**: AMD Ryzen 7 6800H (8C/16T), PyTorch `2.15.0+cpu` (`cpu` execution)
+- **Batching Parameters**: `max_batch_size = 32`, `max_latency_ms = 50`
+
+| Concurrency | Throughput no batching [samples/s] | Throughput with batching [samples/s] | p95 latency no batching [ms] | p95 latency with batching [ms] |
+|---|---|---|---|---|
+| 1 | 21.92 ± 0.19 | 22.48 ± 0.07 | 49.1 ± 0.6 | 47.9 ± 0.2 |
+| 8 | 26.30 ± 0.42 | 21.68 ± 0.30 | 327.0 ± 6.4 | 118.1 ± 1.9 |
+| 32 | 26.56 ± 0.30 | 24.09 ± 0.13 | 1298.9 ± 37.6 | 1792.2 ± 36.1 |
+
+> **Observation**: On CPU-only execution, `ResNetPose` is compute-bound around ~26–37 samples/s regardless of batch size, so adaptive batching does not increase peak throughput over unbatched execution. However, at concurrency 8 it reduces `p95` latency by ~64% (`327.0 ms` → `118.1 ms`), while at concurrency 32 queuing under `max_latency_ms=50` increases `p95` tail latency (`1298.9 ms` → `1792.2 ms`) despite lowering median (`p50`) latency.
+
+---
+
 ## ☁️ Compute Strategy: Local GPU vs. Remote Kaggle
 
 - **Local Machine (NVIDIA RTX 3050 Laptop, 4 GB VRAM)**:
