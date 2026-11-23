@@ -166,7 +166,7 @@ Outputs:
 
 ## 🚀 Homework 2: Model Serving & Dynamic Batching Benchmark (BentoML)
 
-The trained Homework 1 `ResNetPose` (`resnet18`, 1-channel IR) model is served as a REST API using **BentoML** (`src/serving/service.py`) with configurable **adaptive dynamic batching** (`batchable=True`, `max_batch_size=32`, `max_latency_ms=50`).
+The trained Homework 1 `ResNetPose` (`resnet18`, 1-channel IR) model is served as a REST API using **BentoML** (`src/serving/service.py`) with configurable **adaptive dynamic batching** (`batchable=True`, `max_batch_size=32`, `max_latency_ms=3000`).
 
 ### 1. Package the Trained HW1 Model
 Export the trained PyTorch Lightning checkpoint into the local BentoML Model Store:
@@ -216,15 +216,15 @@ python scripts/benchmark_serving.py --config configs/serving.yaml --auto-spawn
 ```
 
 - **Hardware**: AMD Ryzen 7 6800H (8C/16T), PyTorch `2.15.0+cpu` (`cpu` execution)
-- **Batching Parameters**: `max_batch_size = 32`, `max_latency_ms = 50`
+- **Batching Parameters**: `max_batch_size = 32`, `max_latency_ms = 3000` (`0` failed/dropped requests across all 18 runs)
 
 | Concurrency | Throughput no batching [samples/s] | Throughput with batching [samples/s] | p95 latency no batching [ms] | p95 latency with batching [ms] |
 |---|---|---|---|---|
-| 1 | 21.92 ± 0.19 | 22.48 ± 0.07 | 49.1 ± 0.6 | 47.9 ± 0.2 |
-| 8 | 26.30 ± 0.42 | 21.68 ± 0.30 | 327.0 ± 6.4 | 118.1 ± 1.9 |
-| 32 | 26.56 ± 0.30 | 24.09 ± 0.13 | 1298.9 ± 37.6 | 1792.2 ± 36.1 |
+| 1 | 23.23 ± 0.52 | 22.55 ± 2.21 | 49.9 ± 2.6 | 53.7 ± 16.7 |
+| 8 | 28.25 ± 0.06 | 33.10 ± 5.74 | 298.1 ± 2.9 | 287.0 ± 69.4 |
+| 32 | 27.43 ± 0.65 | 31.78 ± 0.53 | 1275.9 ± 58.1 | 1120.2 ± 32.2 |
 
-> **Observation**: On CPU-only execution, `ResNetPose` is compute-bound around ~26–37 samples/s regardless of batch size, so adaptive batching does not increase peak throughput over unbatched execution. However, at concurrency 8 it reduces `p95` latency by ~64% (`327.0 ms` → `118.1 ms`), while at concurrency 32 queuing under `max_latency_ms=50` increases `p95` tail latency (`1298.9 ms` → `1792.2 ms`) despite lowering median (`p50`) latency.
+> **Observation**: With `max_latency_ms = 3000` (giving the CPU enough headroom to finish batched forward passes without `503` load shedding), adaptive batching forms average batches of `~4.1` samples at concurrency 8 and `~16.3` samples at concurrency 32, raising throughput by **+17.2%** (concurrency 8) and **+15.9%** (concurrency 32) while also lowering `p95` latency (`1275.9 ms` → `1120.2 ms` at concurrency 32).
 
 ---
 

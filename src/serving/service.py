@@ -35,7 +35,7 @@ MAX_BATCH_SIZE: int = int(
     os.getenv("POSE_MAX_BATCH_SIZE", str(_BATCH_CFG.get("max_batch_size", 32)))
 )
 MAX_LATENCY_MS: int = int(
-    os.getenv("POSE_MAX_LATENCY_MS", str(_BATCH_CFG.get("max_latency_ms", 50)))
+    os.getenv("POSE_MAX_LATENCY_MS", str(_BATCH_CFG.get("max_latency_ms", 3000)))
 )
 CHECKPOINT_PATH: str = os.getenv(
     "POSE_CHECKPOINT_PATH",

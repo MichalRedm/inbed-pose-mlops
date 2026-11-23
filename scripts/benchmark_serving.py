@@ -5,6 +5,7 @@ import asyncio
 import json
 import os
 import platform
+import socket
 import subprocess
 import sys
 import time
@@ -28,11 +29,13 @@ def compute_run_metrics(
     latencies_ms: list[float],
     batch_sizes: list[int],
     elapsed_s: float,
+    error_count: int = 0,
 ) -> dict[str, float]:
     """Computes throughput (samples/s) and latency percentiles for one run."""
     if not latencies_ms or elapsed_s <= 0.0:
         return {
             "num_requests": 0.0,
+            "error_count": float(error_count),
             "throughput_samples_per_s": 0.0,
             "p50_ms": 0.0,
             "p95_ms": 0.0,
@@ -44,6 +47,7 @@ def compute_run_metrics(
     mean_bs = float(np.mean(batch_sizes)) if batch_sizes else 1.0
     return {
         "num_requests": float(len(latencies_ms)),
+        "error_count": float(error_count),
         "throughput_samples_per_s": float(len(latencies_ms) / elapsed_s),
         "p50_ms": float(np.percentile(arr, 50)),
         "p95_ms": float(np.percentile(arr, 95)),
@@ -103,6 +107,7 @@ async def _run_worker(
     stop_time: float,
     latencies_ms: list[float],
     batch_sizes: list[int],
+    errors: list[int],
     record: bool,
 ) -> None:
     """Continuously sends POST requests until stop_time is reached."""
@@ -116,7 +121,11 @@ async def _run_worker(
                 data = resp.json()
                 if isinstance(data, list) and data:
                     batch_sizes.append(int(data[0].get("batch_size_processed", 1)))
+            elif resp.status_code != 200 and record:
+                errors[0] += 1
         except httpx.HTTPError:
+            if record:
+                errors[0] += 1
             continue
 
 
@@ -142,7 +151,14 @@ async def benchmark_window(
             await asyncio.gather(
                 *[
                     _run_worker(
-                        client, predict_url, payload, warmup_end, [], [], record=False
+                        client,
+                        predict_url,
+                        payload,
+                        warmup_end,
+                        [],
+                        [],
+                        [0],
+                        record=False,
                     )
                     for _ in range(concurrency)
                 ]
@@ -151,6 +167,7 @@ async def benchmark_window(
         # 2. Fixed measurement window
         latencies_ms: list[float] = []
         batch_sizes: list[int] = []
+        errors = [0]
         t_start = time.perf_counter()
         measure_end = t_start + duration_s
         await asyncio.gather(
@@ -162,6 +179,7 @@ async def benchmark_window(
                     measure_end,
                     latencies_ms,
                     batch_sizes,
+                    errors,
                     record=True,
                 )
                 for _ in range(concurrency)
@@ -169,7 +187,16 @@ async def benchmark_window(
         )
         elapsed_s = time.perf_counter() - t_start
 
-    return compute_run_metrics(latencies_ms, batch_sizes, elapsed_s)
+    return compute_run_metrics(
+        latencies_ms, batch_sizes, elapsed_s, error_count=errors[0]
+    )
+
+
+def _find_free_port(host: str) -> int:
+    """Finds an available ephemeral TCP port on host."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind((host, 0))
+        return int(s.getsockname()[1])
 
 
 def _wait_for_server(base_url: str, timeout_s: float = 60.0) -> dict[str, Any]:
@@ -368,10 +395,10 @@ def main() -> None:
     summary: dict[str, dict[int, dict[str, float]]] = {}
     server_metadata: dict[str, Any] = {}
 
-    for mode_idx, (mode_name, enable_batching) in enumerate(modes_to_run):
+    for _mode_idx, (mode_name, enable_batching) in enumerate(modes_to_run):
         print(f"\n=== Benchmarking mode: {mode_name} ===")
         proc: subprocess.Popen[str] | None = None
-        mode_port = port + mode_idx
+        mode_port = _find_free_port(host) if args.auto_spawn else port
         base_url = args.server_url or f"http://{host}:{mode_port}"
 
         try:
@@ -410,7 +437,8 @@ def main() -> None:
                     print(
                         f"    -> throughput={res['throughput_samples_per_s']:.2f} samples/s, "
                         f"p50={res['p50_ms']:.1f}ms, p95={res['p95_ms']:.1f}ms, "
-                        f"p99={res['p99_ms']:.1f}ms, mean_batch={res['mean_batch_size']:.2f}"
+                        f"p99={res['p99_ms']:.1f}ms, mean_batch={res['mean_batch_size']:.2f}, "
+                        f"errors={int(res['error_count'])}"
                     )
                 all_runs[mode_name][c] = repeat_results
                 summary[mode_name][c] = aggregate_repeats(repeat_results)
